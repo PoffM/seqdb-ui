@@ -44,7 +44,7 @@ export interface JsonApiError {
 }
 
 /** HTTP method used to specify a jsonpatch operation type. */
-export type HttpMethod = "POST" | "PATCH" | "DELETE";
+export type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
 
 /**
  * A jsonpatch operation.
