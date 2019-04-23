@@ -1,17 +1,25 @@
-import { Form, Formik, FormikActions, Field } from "formik";
+import { Field, Form, Formik, FormikActions } from "formik";
 import { deserialise } from "kitsu-core";
-import { withRouter } from "next/router";
+import { isEqual, isObject, transform } from "lodash";
+import { SingletonRouter, withRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import ReactTable, { Column } from "react-table";
-import { ApiClientContext, LoadingSpinner } from "../../components";
+import titleCase from "title-case";
+import {
+  ApiClientContext,
+  LoadingSpinner,
+  SubmitButton
+} from "../../components";
 import { Operation } from "../../components/api-client/jsonapi-types";
 import { PcrPrimer } from "../../types/seqdb-api/resources/PcrPrimer";
+import { serialize } from "../../util/serialize";
 
 interface PcrPrimerBulkEditProps {
   ids: number[];
+  router: SingletonRouter;
 }
 
-export function PcrPrimerBulkEdit({ ids }: PcrPrimerBulkEditProps) {
+export function PcrPrimerBulkEdit({ ids, router }: PcrPrimerBulkEditProps) {
   const { doOperations } = useContext(ApiClientContext);
 
   const [initialPrimers, setPrimers] = useState<PcrPrimer[]>([]);
@@ -33,7 +41,6 @@ export function PcrPrimerBulkEdit({ ids }: PcrPrimerBulkEditProps) {
       )).map(res => res.data);
 
       setPrimers(responsePrimers);
-      console.log(responsePrimers)
     }
     getData();
   }, [ids]);
@@ -42,30 +49,89 @@ export function PcrPrimerBulkEdit({ ids }: PcrPrimerBulkEditProps) {
     return <LoadingSpinner loading={true} />;
   }
 
-  function onSubmit(
-    values: PcrPrimer[],
-    formikActions: FormikActions<PcrPrimer[]>
+  async function onSubmit(
+    submittedValues: PcrPrimer[],
+    { setStatus, setSubmitting }: FormikActions<PcrPrimer[]>
   ) {
-    console.log(values);
+    const primerDiffs = Object.values<any>(
+      difference(submittedValues, initialPrimers)
+    );
+
+    const serializedPrimerDiffs = await Promise.all(
+      primerDiffs.map(diff => serialize({ resource: diff, type: "pcrPrimer" }))
+    );
+
+    const operations: Operation[] = serializedPrimerDiffs.map<Operation>(
+      primerDiff => ({
+        op: "PATCH",
+        path: `pcrPrimer/${primerDiff.id}`,
+        value: primerDiff
+      })
+    );
+
+    try {
+      const responses = await doOperations(operations);
+      setStatus(`${responses.length} rows updated.`);
+    } catch (error) {
+      setStatus(error.message);
+      setSubmitting(false);
+    }
+    setSubmitting(false);
   }
 
   return (
     <Formik initialValues={initialPrimers} onSubmit={onSubmit}>
-      <Form>
-        <ReactTable data={initialPrimers} columns={COLUMNS} />
-      </Form>
+      {({ isSubmitting, status }) => (
+        <Form>
+          {status && <div className="alert alert-info">{status}</div>}
+          <ReactTable
+            columns={COLUMNS}
+            data={initialPrimers}
+            showPaginationBottom={false}
+            loading={isSubmitting}
+            manual={true}
+            pageSize={initialPrimers.length}
+            sortable={false}
+          />
+          <SubmitButton />
+        </Form>
+      )}
     </Formik>
   );
 }
 
-const COLUMNS: Column<PcrPrimer>[] = [
-  {
-    accessor: "name",
-    Header: "Name",
-    Cell: ({ index }) => <Field name={`${index}.name`} />
-  }
+const COLUMNS: Array<Column<PcrPrimer>> = [
+  stringColumn("name"),
+  stringColumn("application")
 ];
 
-export default withRouter(({ router: { query: { ids } } }) => (
-  <PcrPrimerBulkEdit ids={(ids as string).split(",").map(Number)} />
+function stringColumn(accessor: string) {
+  return {
+    Cell: ({ index }) => (
+      <Field className="form-control" name={`${index}.${accessor}`} />
+    ),
+    Header: titleCase(accessor),
+    accessor
+  };
+}
+
+function difference(object, base) {
+  function changes(object, base) {
+    return transform(object, (result, value, key: any) => {
+      if (!isEqual(value, base[key]) || ["id", "type"].includes(key)) {
+        result[key] =
+          isObject(value) && isObject(base[key])
+            ? changes(value, base[key])
+            : value;
+      }
+    });
+  }
+  return changes(object, base);
+}
+
+export default withRouter(({ router }) => (
+  <PcrPrimerBulkEdit
+    ids={(router.query.ids as string).split(",").map(Number)}
+    router={router}
+  />
 ));
