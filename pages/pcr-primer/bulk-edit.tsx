@@ -5,8 +5,18 @@ import { stringColumn } from "../../components/bulk-editor/columns";
 import { PcrPrimer } from "../../types/seqdb-api/resources/PcrPrimer";
 
 const COLUMNS: Array<Column<PcrPrimer>> = [
+  stringColumn("targetSpecies"),
   stringColumn("name"),
-  stringColumn("application")
+  stringColumn("lotNumber"),
+  stringColumn("application"),
+  stringColumn("seq"),
+  stringColumn("tmCalculated"),
+  stringColumn("supplier"),
+  stringColumn("purification"),
+  stringColumn("reference"),
+  stringColumn("designedBy"),
+  stringColumn("stockConcentration"),
+  stringColumn("note")
 ];
 
 export default withRouter(({ router }) => (

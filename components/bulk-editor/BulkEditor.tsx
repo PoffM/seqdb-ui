@@ -19,6 +19,11 @@ interface BulkEditorProps {
   type: string;
 }
 
+interface Status {
+  message: string;
+  type: "success" | "error";
+}
+
 export function BulkEditor({
   columns,
   findPath,
@@ -30,6 +35,7 @@ export function BulkEditor({
   const { doOperations } = useContext(ApiClientContext);
 
   const [initialRows, setInitialRows] = useState<KitsuResource[]>([]);
+  const [status, setStatus] = useState<Status>();
 
   useEffect(() => {
     async function getData() {
@@ -54,7 +60,7 @@ export function BulkEditor({
 
   async function onSubmit(
     submittedValues: any[],
-    { setStatus, setSubmitting }: FormikActions<KitsuResource[]>
+    { setSubmitting }: FormikActions<KitsuResource[]>
   ) {
     const diffs = Object.values<any>(difference(submittedValues, initialRows));
 
@@ -70,9 +76,15 @@ export function BulkEditor({
 
     try {
       const responses = await doOperations(operations);
-      setStatus(`${responses.length} rows updated.`);
+      setStatus({
+        message: `${responses.length} rows updated.`,
+        type: "success"
+      });
     } catch (error) {
-      setStatus(error.message);
+      setStatus({
+        message: error.message,
+        type: "error"
+      });
       setSubmitting(false);
     }
     setSubmitting(false);
@@ -82,11 +94,21 @@ export function BulkEditor({
     return <LoadingSpinner loading={true} />;
   }
 
+  if (status && status.type === "success") {
+    return (
+      <div className="alert alert-success">
+        <span>{status.message}</span>
+      </div>
+    );
+  }
+
   return (
     <Formik initialValues={initialRows} onSubmit={onSubmit}>
-      {({ isSubmitting, status }) => (
+      {({ isSubmitting }) => (
         <Form>
-          {status && <div className="alert alert-info">{status}</div>}
+          {status && status.type === "error" && (
+            <div className="alert alert-error">{status.message}</div>
+          )}
           <ReactTable
             columns={columns}
             data={initialRows}
