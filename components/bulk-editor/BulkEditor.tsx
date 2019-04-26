@@ -2,20 +2,21 @@ import { Form, Formik, FormikActions } from "formik";
 import { KitsuResource } from "kitsu";
 import { deserialise } from "kitsu-core";
 import { isEqual, isObject, transform } from "lodash";
-import { SingletonRouter } from "next/router";
 import { useContext, useEffect, useState } from "react";
 import ReactTable, { Column } from "react-table";
-import { SubmitButton } from "../../components";
-import { ApiClientContext, LoadingSpinner } from "../../components/";
+import {
+  ApiClientContext,
+  LoadingSpinner,
+  SubmitButton
+} from "../../components/";
 import { Operation } from "../../components/api-client/jsonapi-types";
 import { serialize } from "../../util/serialize";
 
-interface BulkEditorProps {
-  columns: Column[];
+interface BulkEditorProps<TData> {
+  columns: Array<Column<TData>>;
   findPath: (id: number | string) => string;
   ids: number[];
   patchPath: (id: number | string) => string;
-  router: SingletonRouter;
   type: string;
 }
 
@@ -24,14 +25,13 @@ interface Status {
   type: "success" | "error";
 }
 
-export function BulkEditor({
+export function BulkEditor<TData extends KitsuResource>({
   columns,
   findPath,
   ids,
   patchPath,
-  router,
   type
-}: BulkEditorProps) {
+}: BulkEditorProps<TData>) {
   const { doOperations } = useContext(ApiClientContext);
 
   const [initialRows, setInitialRows] = useState<KitsuResource[]>([]);
@@ -39,7 +39,7 @@ export function BulkEditor({
 
   useEffect(() => {
     async function getData() {
-      const operations: Operation[] = ids.map(id => ({
+      const operations = ids.map<Operation>(id => ({
         op: "GET",
         path: findPath(id),
         value: {
@@ -62,13 +62,15 @@ export function BulkEditor({
     submittedValues: any[],
     { setSubmitting }: FormikActions<KitsuResource[]>
   ) {
-    const diffs = Object.values<any>(difference(submittedValues, initialRows));
+    const diffs: Array<Partial<TData>> = Object.values(
+      difference(submittedValues, initialRows)
+    );
 
     const serializedDiffs = await Promise.all(
       diffs.map(diff => serialize({ resource: diff, type }))
     );
 
-    const operations: Operation[] = serializedDiffs.map<Operation>(diff => ({
+    const operations = serializedDiffs.map<Operation>(diff => ({
       op: "PATCH",
       path: patchPath(diff.id),
       value: diff
@@ -125,6 +127,7 @@ export function BulkEditor({
   );
 }
 
+/** Returns the difference between two objects, but includes each object's type and ID. */
 function difference(object, base) {
   function changes(object, base) {
     return transform(object, (result, value, key: any) => {

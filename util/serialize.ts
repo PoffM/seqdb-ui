@@ -5,7 +5,7 @@ import { JsonApiResource } from "../components/api-client/jsonapi-types";
 /** Params for the serialize util function. */
 interface SerializeParams<TData extends KitsuResource> {
   /** The resource. */
-  resource: TData;
+  resource: Partial<TData>;
 
   /** The resource type. */
   type: string;
@@ -66,7 +66,7 @@ export async function serialize<TData extends KitsuResource>({
  * a null relationship, and removes those { id: null } values from the given resource.
  * The returned value is a JSONAPI relationships object.
  */
-function getNullRelationships(resource: KitsuResource) {
+function getNullRelationships(resource: Partial<KitsuResource>) {
   const nullRelationshipFields = Object.keys(resource).filter(
     key => resource[key] && resource[key].id === null
   );

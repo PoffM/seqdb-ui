@@ -20,12 +20,11 @@ const COLUMNS: Array<Column<PcrPrimer>> = [
 ];
 
 export default withRouter(({ router }) => (
-  <BulkEditor
+  <BulkEditor<PcrPrimer>
     columns={COLUMNS}
     findPath={id => `pcrPrimer/${id}?include=group,region`}
     ids={(router.query.ids as string).split(",").map(Number)}
     patchPath={id => `pcrPrimer/${id}`}
-    router={router}
     type="pcrPrimer"
   />
 ));
