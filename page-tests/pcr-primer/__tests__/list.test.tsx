@@ -60,4 +60,24 @@ describe("PcrPrimer list page", () => {
     expect(wrapper.containsMatchingElement(<a>Test Primer 1</a>)).toEqual(true);
     expect(wrapper.containsMatchingElement(<a>Test Primer 2</a>)).toEqual(true);
   });
+
+  it("Has a button that takes you to the bulk edit page.", async () => {
+    const mockPush = jest.fn();
+
+    const wrapper = mountWithContext(
+      <PcrPrimerListPage router={{ push: mockPush } as any} />
+    );
+
+    await Promise.resolve();
+    wrapper.update();
+
+    wrapper.find("button[children='Bulk Edit']").simulate("click");
+
+    expect(mockPush).lastCalledWith({
+      pathname: "/pcr-primer/bulk-edit",
+      query: {
+        ids: "4,5"
+      }
+    });
+  });
 });

@@ -562,4 +562,23 @@ describe("QueryTable component", () => {
     expect(wrapper.find(".pagination-top").exists()).toEqual(true);
     expect(wrapper.find(".pagination-bottom").exists()).toEqual(true);
   });
+
+  it("Provides a prop to inject props into the inner react-table.", () => {
+    const wrapper = mountWithContext(
+      <QueryTable<Todo>
+        path="todo"
+        columns={["id", "name", "description"]}
+        reactTableProps={() => ({
+          TableComponent: ({ children }) => (
+            <div>
+              <div id="injected-div" />
+              {children}
+            </div>
+          )
+        })}
+      />
+    );
+
+    expect(wrapper.find("#injected-div").exists()).toEqual(true);
+  });
 });

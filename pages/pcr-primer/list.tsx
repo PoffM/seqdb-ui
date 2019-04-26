@@ -34,7 +34,7 @@ export function PcrPrimerListPage({ router }: WithRouterProps) {
 
     router.push({
       pathname: "/pcr-primer/bulk-edit",
-      query: { ids },
+      query: { ids }
     });
   }
 

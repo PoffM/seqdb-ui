@@ -110,8 +110,8 @@ export class QueryTable<TData extends KitsuResource> extends React.Component<
               manual={true}
               onFetchData={this.onFetchData}
               pages={this.getNumberOfPages(response)}
-              {...reactTableProps({ loading, response, error })}
               showPaginationTop={true}
+              {...reactTableProps({ loading, response, error })}
             />
           )}
         </Query>
