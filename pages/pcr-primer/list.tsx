@@ -1,5 +1,8 @@
+import { KitsuResponse } from "kitsu";
 import Link from "next/link";
+import { withRouter, WithRouterProps } from "next/router";
 import { ColumnDefinition, Head, Nav, QueryTable } from "../../components";
+import { MetaWithTotal } from "../../types/seqdb-api/meta";
 import { PcrPrimer } from "../../types/seqdb-api/resources/PcrPrimer";
 
 const PCRPRIMER_TABLE_COLUMNS: Array<ColumnDefinition<PcrPrimer>> = [
@@ -25,7 +28,16 @@ const PCRPRIMER_TABLE_COLUMNS: Array<ColumnDefinition<PcrPrimer>> = [
   "tmCalculated"
 ];
 
-export default function PcrPrimerListPage() {
+export function PcrPrimerListPage({ router }: WithRouterProps) {
+  function goToBulkEditor(response: KitsuResponse<PcrPrimer[], MetaWithTotal>) {
+    const ids = response.data.map(obj => obj.id).join(",");
+
+    router.push({
+      pathname: "/pcr-primer/bulk-edit",
+      query: { ids },
+    });
+  }
+
   return (
     <div>
       <Head title="PCR Primers" />
@@ -39,8 +51,22 @@ export default function PcrPrimerListPage() {
           columns={PCRPRIMER_TABLE_COLUMNS}
           include="group,region"
           path="pcrPrimer"
+          reactTableProps={({ response }) => ({
+            TableComponent: ({ children }) => (
+              <div>
+                <div>
+                  <button onClick={() => goToBulkEditor(response)}>
+                    Bulk Edit
+                  </button>
+                </div>
+                {children}
+              </div>
+            )
+          })}
         />
       </div>
     </div>
   );
 }
+
+export default withRouter(PcrPrimerListPage);

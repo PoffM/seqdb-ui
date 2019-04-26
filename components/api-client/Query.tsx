@@ -16,7 +16,7 @@ interface QueryProps<TData extends KitsuResponseData, TMeta> {
 }
 
 /** Query component state. */
-interface QueryState<TData extends KitsuResponseData, TMeta> {
+export interface QueryState<TData extends KitsuResponseData, TMeta> {
   loading: boolean;
   error?: JsonApiErrorResponse;
   response?: KitsuResponse<TData, TMeta>;

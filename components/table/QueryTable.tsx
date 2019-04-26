@@ -1,11 +1,11 @@
 import { FilterParam, KitsuResource, KitsuResponse } from "kitsu";
 import React, { createRef } from "react";
-import ReactTable, { Column } from "react-table";
+import ReactTable, { Column, TableProps } from "react-table";
 import "react-table/react-table.css";
 import titleCase from "title-case";
 import { PageSpec } from "types/seqdb-api/page";
 import { MetaWithTotal } from "../../types/seqdb-api/meta";
-import { JsonApiQuerySpec, Query } from "../api-client/Query";
+import { JsonApiQuerySpec, Query, QueryState } from "../api-client/Query";
 
 /** Object types accepted as a column definition. */
 export type ColumnDefinition<TData> = string | Column<TData>;
@@ -29,6 +29,11 @@ export interface QueryTableProps<TData extends KitsuResource> {
 
   /** The columns to show in the table. */
   columns: Array<ColumnDefinition<TData>>;
+
+  /** Overrides the specified inner react-table component props. */
+  reactTableProps?: (
+    queryState: QueryState<TData[], MetaWithTotal>
+  ) => Partial<TableProps<TData>>;
 }
 
 /** QueryTable component's state. */
@@ -86,7 +91,7 @@ export class QueryTable<TData extends KitsuResource> extends React.Component<
   }
 
   public render() {
-    const { filter, include, path } = this.props;
+    const { filter, include, path, reactTableProps = () => ({}) } = this.props;
     const { page, sort } = this.state;
 
     const query: JsonApiQuerySpec = { path, filter, include, page, sort };
@@ -95,7 +100,7 @@ export class QueryTable<TData extends KitsuResource> extends React.Component<
       <div ref={this.divWrapperRef}>
         <style>{queryTableStyle}</style>
         <Query<TData[], MetaWithTotal> query={query}>
-          {({ loading, response }) => (
+          {({ error, loading, response }) => (
             <ReactTable
               className="-striped"
               columns={this.mappedColumns}
@@ -105,6 +110,7 @@ export class QueryTable<TData extends KitsuResource> extends React.Component<
               manual={true}
               onFetchData={this.onFetchData}
               pages={this.getNumberOfPages(response)}
+              {...reactTableProps({ loading, response, error })}
               showPaginationTop={true}
             />
           )}
