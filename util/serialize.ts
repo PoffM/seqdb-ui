@@ -50,6 +50,10 @@ export async function serialize<TData extends KitsuResource>({
   // the JSONAPI resource type.
   // kitsu-core's serializer ignores attributes called "type", so we manually add it back here if it exists.
   if (resourceCopy.type !== type) {
+    // If there is no attributes object, create one here so the "type" attribute can be added to it.
+    if (!data.attributes) {
+      data.attributes = {};
+    }
     data.attributes.type = resourceCopy.type;
   }
 
