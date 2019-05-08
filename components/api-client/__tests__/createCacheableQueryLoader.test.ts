@@ -2,7 +2,7 @@ import Kitsu from "kitsu";
 import { createCacheableQueryLoader } from "../createCacheableQueryLoader";
 
 /** Mock Kitsu "get" method. */
-const mockGet = jest.fn(async (model, {}) => {
+const mockGet = jest.fn(async (_, {}) => {
   return [];
 });
 
