@@ -43,7 +43,7 @@ export function ResourceSelect<TData extends KitsuResource>({
   sort,
   value
 }: ResourceSelectProps<TData>) {
-  const { apiClient } = useContext(ApiClientContext);
+  const { cacheableGet } = useContext(ApiClientContext);
 
   async function loadOptions(
     inputValue: string,
@@ -59,7 +59,7 @@ export function ResourceSelect<TData extends KitsuResource>({
     );
 
     // Send the API request.
-    const { data } = await apiClient.get(model, getParams);
+    const { data } = await cacheableGet(model, getParams);
 
     // Build the list of options from the returned resources.
     const resourceOptions = data.map(resource => ({

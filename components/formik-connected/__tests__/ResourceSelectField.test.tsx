@@ -91,14 +91,14 @@ describe("ResourceSelectField component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     // Simulate the select component's input change.
     (wrapper.find(Select).props() as any).onInputChange("Mat", "input-change");
 
     // Wait for the filtered options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     // The "get" function should have been called with the filter.

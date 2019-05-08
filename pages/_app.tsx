@@ -8,8 +8,6 @@ import { ApiClientContext, createContextValue } from "../components";
  * See: https://github.com/zeit/next.js/#custom-app
  */
 export default class SeqdbUiApp extends App {
-  private contextValue = createContextValue();
-
   private hasMounted = false;
 
   public componentDidMount() {
@@ -24,11 +22,13 @@ export default class SeqdbUiApp extends App {
   public render() {
     const { Component, pageProps } = this.props;
 
+    const contextValue = createContextValue();
+
     return (
       // Render nothing on the first browser render to avoid passing an empty query string to
       // the page component.
       !this.isFirstBrowserRender() && (
-        <ApiClientContext.Provider value={this.contextValue}>
+        <ApiClientContext.Provider value={contextValue}>
           <Container>
             <Component {...pageProps} />
           </Container>

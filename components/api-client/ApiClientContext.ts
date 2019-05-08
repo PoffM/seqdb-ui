@@ -1,6 +1,10 @@
 import Kitsu from "kitsu";
 import React from "react";
 import {
+  createCacheableQueryLoader,
+  QueryLoader
+} from "./createCacheableQueryLoader";
+import {
   JsonApiErrorResponse,
   JsonApiResponse,
   Operation,
@@ -11,6 +15,14 @@ import {
 export interface ApiClientContextI {
   /** Client to talk to the back-end API. */
   apiClient: Kitsu;
+
+  /**
+   * Works like the API client's get method, but caches the query result. Useful for when multiple
+   * components on the same page are sending the same request, so you can use this function to send
+   * one HTTP request instead of many duplicate requests. The cache lasts as long as this context
+   * instance lasts, so the context should be re-created for each page.
+   */
+  cacheableGet: QueryLoader;
 
   /** Function to perform requests against a jsonpatch-compliant JSONAPI server. */
   doOperations: (operations: Operation[]) => Promise<JsonApiResponse[]>;
@@ -33,6 +45,8 @@ export function createContextValue(): ApiClientContextI {
     pluralize: false,
     resourceCase: "none"
   });
+
+  const cacheableGet = createCacheableQueryLoader(apiClient);
 
   /**
    * Performs a write operation against a jsonpatch-compliant JSONAPI server.
@@ -66,6 +80,7 @@ export function createContextValue(): ApiClientContextI {
 
   return {
     apiClient,
+    cacheableGet,
     doOperations
   };
 }

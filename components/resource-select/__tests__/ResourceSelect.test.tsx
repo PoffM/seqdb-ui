@@ -66,7 +66,7 @@ describe("ResourceSelect component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     const options = (wrapper.find(Select).props() as any).options;
@@ -89,7 +89,7 @@ describe("ResourceSelect component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     const selectProps = wrapper.find(Select).props();
@@ -106,10 +106,13 @@ describe("ResourceSelect component", () => {
     });
   });
 
-  it("Allows the 'onChange' prop to be undefined.", () => {
+  it("Allows the 'onChange' prop to be undefined.", async () => {
     const wrapper = mountWithContext(
       <ResourceSelect {...DEFAULT_SELECT_PROPS} onChange={undefined} />
     );
+
+    // Wait for the options to load.
+    await new Promise(res => setTimeout(res, 2));
 
     // Select an option.
     (wrapper.find(Select).props() as any).onChange({
@@ -126,10 +129,9 @@ describe("ResourceSelect component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
-    expect(mockGet).toHaveBeenCalledTimes(1);
     expect(mockGet).lastCalledWith("todo", { include: "group", sort: "name" });
   });
 
@@ -139,7 +141,7 @@ describe("ResourceSelect component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     expect(mockGet).toHaveBeenCalledTimes(1);
@@ -167,7 +169,7 @@ describe("ResourceSelect component", () => {
     onInputChange("test filter value", "input-change");
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     // The GET function shsould have been called twice: for the initial query and again for the
@@ -189,7 +191,7 @@ describe("ResourceSelect component", () => {
     ]);
   });
 
-  it("Provides a 'value' prop to specify the select's value.", () => {
+  it("Provides a 'value' prop to specify the select's value.", async () => {
     const value = {
       id: 300,
       name: "DEFAULT TODO",
@@ -199,6 +201,9 @@ describe("ResourceSelect component", () => {
     const wrapper = mountWithContext(
       <ResourceSelect {...DEFAULT_SELECT_PROPS} value={value} />
     );
+
+    // Wait for the options to load.
+    await new Promise(res => setTimeout(res, 2));
 
     const currentValue = (wrapper.find(Select).props() as any).value;
 
@@ -220,7 +225,7 @@ describe("ResourceSelect component", () => {
     );
 
     // Wait for the options to load.
-    await Promise.resolve();
+    await new Promise(res => setTimeout(res, 2));
     wrapper.update();
 
     const { options, onChange } = wrapper.find(Select).props();
@@ -250,7 +255,7 @@ describe("ResourceSelect component", () => {
     );
   });
 
-  it("Shows a '<none>' label in the select input when the passed value's id is null.", () => {
+  it("Shows a '<none>' label in the select input when the passed value's id is null.", async () => {
     const nullOption = {
       id: null
     };
@@ -259,8 +264,40 @@ describe("ResourceSelect component", () => {
       <ResourceSelect {...DEFAULT_SELECT_PROPS} value={nullOption} />
     );
 
+    // Wait for the options to load.
+    await new Promise(res => setTimeout(res, 2));
+
     expect(wrapper.containsMatchingElement(<div>{"<none>"}</div>)).toEqual(
       true
     );
+  });
+
+  it("Batches queries into one HTTP request when multiple ResourceSelects use the same query.", async () => {
+    mountWithContext(
+      <div>
+        <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+        <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+        <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+        <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+        <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+      </div>
+    );
+
+    // Wait for the options to load.
+    await new Promise(res => setTimeout(res, 2));
+    expect(mockGet).toBeCalledTimes(1);
+  });
+
+  it("Styles the dropdown menu so it shows in front of table cells.", () => {
+    const wrapper = mountWithContext(
+      <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+    );
+
+    expect(
+      wrapper
+        .find(Select)
+        .prop("styles")
+        .menu()
+    ).toEqual({ zIndex: 5 });
   });
 });
