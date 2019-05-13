@@ -1,4 +1,5 @@
 import { mount } from "enzyme";
+import { act } from "react-test-renderer";
 import {
   ApiClientContext,
   createContextValue,
@@ -92,9 +93,15 @@ describe("BulkEditor component", () => {
     jest.clearAllMocks();
   });
 
-  it("Renders initially with a loading indicator.", () => {
+  it("Renders initially with a loading indicator.", async () => {
     const wrapper = mountWithContext();
     expect(wrapper.find(LoadingSpinner).exists()).toEqual(true);
+
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
   });
 
   it("Displays the initial data after it finishes loading.", async () => {
@@ -102,8 +109,11 @@ describe("BulkEditor component", () => {
 
     const wrapper = mountWithContext();
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     expect(mockPatch).lastCalledWith(
       expect.anything(),
@@ -140,8 +150,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
     const wrapper = mountWithContext();
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(res => setTimeout(res, 5));
+      wrapper.update();
+    });
 
     wrapper.find("input[name='0.name']").simulate("change", {
       target: { name: "0.name", value: "new name" }
@@ -153,8 +166,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce({ data: [{}, {}] });
     wrapper.find("form").simulate("submit");
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(res => setTimeout(res, 5));
+      wrapper.update();
+    });
 
     // Only the first and third primers should have been edited,
     // and only the edited attributes should be included in the operations request.
@@ -188,8 +204,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
     const wrapper = mountWithContext();
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     wrapper.find("input[name='0.name']").simulate("change", {
       target: { name: "0.name", value: "new name" }
@@ -198,8 +217,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce({ data: [{ status: 201 }] });
     wrapper.find("form").simulate("submit");
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     expect(wrapper.find(".alert.alert-success").text()).toEqual(
       "1 rows updated."
@@ -210,8 +232,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
     const wrapper = mountWithContext();
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     wrapper.find("input[name='0.name']").simulate("change", {
       target: { name: "0.name", value: "this-name-is-too-long" }
@@ -220,8 +245,11 @@ describe("BulkEditor component", () => {
     mockPatch.mockReturnValueOnce(MOCK_ERROR_RESPONSE);
     wrapper.find("form").simulate("submit");
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Wait for the state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     expect(wrapper.find(".alert.alert-error").text()).toEqual(
       "Constraint violation: name size must be between 1 and 10"

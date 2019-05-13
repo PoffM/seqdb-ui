@@ -1,4 +1,5 @@
 import { mount } from "enzyme";
+import { act } from "react-test-renderer";
 import { ApiClientContext, createContextValue } from "../../../components";
 import { OperationsResponse } from "../../../components/api-client/jsonapi-types";
 import PcrPrimerBulkEditPage from "../../../pages/pcr-primer/bulk-edit";
@@ -48,8 +49,14 @@ describe("Pcr Primer bulk edit page", () => {
     jest.clearAllMocks();
   });
 
-  it("Renders the primer bulk editor.", () => {
-    mountWithContext();
+  it("Renders the primer bulk editor.", async () => {
+    const wrapper = mountWithContext();
+
+    // Await state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     expect(mockPatch).lastCalledWith(
       expect.anything(),
@@ -78,8 +85,11 @@ describe("Pcr Primer bulk edit page", () => {
     mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
     const wrapper = mountWithContext();
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Await state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     // Edit a note field
     wrapper.find("input[name='0.note']").simulate("change", {
@@ -89,8 +99,11 @@ describe("Pcr Primer bulk edit page", () => {
     // Submit the form.
     wrapper.find("form").simulate("submit");
 
-    await new Promise(res => setTimeout(res, 5));
-    wrapper.update();
+    // Await state update.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
 
     // The new note value is patched here.
     expect(mockPatch).lastCalledWith(
