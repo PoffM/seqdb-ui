@@ -101,7 +101,12 @@ export function resourceSelectColumn<TData>(
           }
 
           return (
-            <ResourceSelect {...options} onChange={onChange} value={value} />
+            <ResourceSelect
+              {...options}
+              onChange={onChange}
+              styles={{ menu: () => ({ zIndex: 5 }) }}
+              value={value}
+            />
           );
         }}
       </FastField>

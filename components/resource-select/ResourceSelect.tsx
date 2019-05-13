@@ -2,6 +2,7 @@ import { FilterParam, GetParams, KitsuResource } from "kitsu";
 import { debounce, omitBy } from "lodash";
 import React, { useContext } from "react";
 import { Async as AsyncSelect } from "react-select";
+import { Styles } from "react-select/lib/styles";
 import { OptionsType } from "react-select/lib/types";
 import { isUndefined } from "util";
 import { ApiClientContext } from "../../components/api-client/ApiClientContext";
@@ -28,6 +29,9 @@ export interface ResourceSelectProps<TData> {
 
   /** The JSONAPI "sort" parameter. */
   sort?: string;
+
+  /** react-select styles */
+  styles?: Partial<Styles>;
 }
 
 /** An option the user can select to set the relationship to null. */
@@ -41,6 +45,7 @@ export function ResourceSelect<TData extends KitsuResource>({
   onChange = () => undefined,
   optionLabel,
   sort,
+  styles,
   value
 }: ResourceSelectProps<TData>) {
   const { cacheableGet } = useContext(ApiClientContext);
@@ -93,7 +98,7 @@ export function ResourceSelect<TData extends KitsuResource>({
       loadOptions={debouncedOptionLoader}
       onChange={({ value }) => onChange(value)}
       placeholder="Type here to search."
-      styles={{ menu: () => ({ zIndex: 5 }) }}
+      styles={styles}
       value={selectedValue as any}
     />
   );

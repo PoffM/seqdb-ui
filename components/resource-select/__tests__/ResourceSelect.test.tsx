@@ -288,9 +288,12 @@ describe("ResourceSelect component", () => {
     expect(mockGet).toBeCalledTimes(1);
   });
 
-  it("Styles the dropdown menu so it shows in front of table cells.", () => {
+  it("Allows react-select styles config.", () => {
     const wrapper = mountWithContext(
-      <ResourceSelect {...DEFAULT_SELECT_PROPS} />
+      <ResourceSelect
+        {...DEFAULT_SELECT_PROPS}
+        styles={{ menu: () => ({ zIndex: 5 }) }}
+      />
     );
 
     expect(
