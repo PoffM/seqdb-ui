@@ -62,9 +62,8 @@ describe("serialize function", () => {
   });
 
   it("Allows the resource to have an attribute called 'type' that is separate from the JSONAPI resource type.", async () => {
-    const resource: Keyboard = {
+    const resource: Partial<Keyboard> = {
       id: "5",
-      name: "azio",
       type: "plastic"
     };
 
@@ -72,7 +71,6 @@ describe("serialize function", () => {
 
     expect(serialized).toEqual({
       attributes: {
-        name: "azio",
         type: "plastic"
       },
       id: "5",

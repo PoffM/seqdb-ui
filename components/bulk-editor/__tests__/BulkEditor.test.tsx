@@ -1,13 +1,12 @@
 import { mount } from "enzyme";
 import { act } from "react-test-renderer";
+import { BulkEditor, stringColumn } from "..";
 import {
   ApiClientContext,
   createContextValue,
   LoadingSpinner
 } from "../../../components";
 import { OperationsResponse } from "../../../components/api-client/jsonapi-types";
-import { BulkEditor } from "../BulkEditor";
-import { stringColumn } from "../columns";
 
 const MOCK_PRIMER_RESPONSE = {
   data: [

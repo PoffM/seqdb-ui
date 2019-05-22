@@ -1,11 +1,11 @@
 import { withRouter } from "next/router";
 import { Column } from "react-table";
-import { BulkEditor } from "../../components/bulk-editor/BulkEditor";
 import {
+  BulkEditor,
   resourceSelectColumn,
   selectColumn,
   stringColumn
-} from "../../components/bulk-editor/columns";
+} from "../../components/bulk-editor";
 import { PcrPrimer } from "../../types/seqdb-api/resources/PcrPrimer";
 import { Region } from "../../types/seqdb-api/resources/Region";
 import { filterBy } from "../../util/rsql";
