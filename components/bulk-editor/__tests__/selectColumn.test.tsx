@@ -33,11 +33,8 @@ jest.mock("axios", () => ({
 }));
 
 describe("selectColumn", () => {
-  it("Changes a formik value.", async () => {
-    mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
-
-    // Render primer bulk editor.
-    const wrapper = mount(
+  function mountBulkEditor() {
+    return mount(
       <ApiClientContext.Provider value={createContextValue()}>
         <BulkEditor
           columns={[
@@ -52,6 +49,13 @@ describe("selectColumn", () => {
         />
       </ApiClientContext.Provider>
     );
+  }
+
+  it("Changes a formik value.", async () => {
+    mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
+
+    // Render primer bulk editor.
+    const wrapper = mountBulkEditor();
 
     // Wait for the bulk editor to load.
     await act(async () => {
@@ -92,5 +96,25 @@ describe("selectColumn", () => {
       ],
       expect.anything()
     );
+  });
+
+  it("Sets the dropdown zIndex to 5 for visibility in the bulk edit table.", async () => {
+    mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
+
+    // Render primer bulk editor.
+    const wrapper = mountBulkEditor();
+
+    // Wait for the bulk editor to load.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
+
+    expect(
+      wrapper
+        .find(Select)
+        .prop("styles")
+        .menu()
+    ).toEqual({ zIndex: 5 });
   });
 });

@@ -1,8 +1,14 @@
 import { mount } from "enzyme";
 import { act } from "react-test-renderer";
-import { ApiClientContext, createContextValue } from "../../../components";
+import {
+  ApiClientContext,
+  createContextValue,
+  ResourceSelect,
+  ResourceSelectProps
+} from "../../../components";
 import { OperationsResponse } from "../../../components/api-client/jsonapi-types";
 import PcrPrimerBulkEditPage from "../../../pages/pcr-primer/bulk-edit";
+import { Region } from "../../../types/seqdb-api/resources/Region";
 
 const mockRouter = { query: { ids: "3,4,5" } };
 
@@ -22,11 +28,13 @@ const MOCK_PRIMER_RESPONSE = {
   ] as OperationsResponse
 };
 
+const mockGet = jest.fn(() => ({ data: [] }));
 const mockPatch = jest.fn(() => ({ data: [] }));
 
 jest.mock("axios", () => ({
   create() {
     return {
+      get: mockGet,
       patch: mockPatch
     };
   }
@@ -117,6 +125,69 @@ describe("Pcr Primer bulk edit page", () => {
               note: "new note"
             },
             id: "5",
+            type: "pcrPrimer"
+          }
+        }
+      ],
+      expect.anything()
+    );
+  });
+
+  it("Has a ResourceSelect dropdown for changing the Region.", async () => {
+    mockPatch.mockReturnValueOnce(MOCK_PRIMER_RESPONSE);
+    const wrapper = mountWithContext();
+
+    // Wait for the form to populate.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
+
+    const resourceSelect = wrapper.find<ResourceSelectProps<Region>>(
+      ResourceSelect
+    );
+
+    // The menu's zIndex should be 5 to stay visible in the table cell.
+    expect(resourceSelect.prop("styles").menu(null, null)).toEqual({
+      zIndex: 5
+    });
+
+    resourceSelect.prop("onChange")({
+      description: "description",
+      id: "123",
+      name: "name",
+      symbol: "symbol",
+      type: "region"
+    });
+
+    // Submit the bulk edit form.
+    wrapper.find("form").simulate("submit");
+
+    // Wait for the submission to complete.
+    await act(async () => {
+      await new Promise(setImmediate);
+      wrapper.update();
+    });
+
+    expect(mockPatch).lastCalledWith(
+      "operations",
+      [
+        {
+          op: "PATCH",
+          path: "pcrPrimer/5",
+          value: {
+            id: "5",
+            relationships: {
+              region: {
+                data: {
+                  description: "description",
+                  id: "123",
+                  name: "name",
+                  symbol: "symbol",
+                  type: "region"
+                }
+              }
+            },
             type: "pcrPrimer"
           }
         }
