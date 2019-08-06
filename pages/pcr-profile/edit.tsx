@@ -1,9 +1,11 @@
 import { Form, Formik, FormikActions } from "formik";
-import { SingletonRouter, withRouter, WithRouterProps } from "next/router";
+import { WithRouterProps } from "next/dist/client/with-router";
+import { NextRouter, withRouter } from "next/router";
 import { useContext } from "react";
 import {
   ApiClientContext,
   ButtonBar,
+  CancelButton,
   ErrorViewer,
   Head,
   LoadingSpinner,
@@ -17,11 +19,10 @@ import { Group } from "../../types/seqdb-api/resources/Group";
 import { PcrProfile } from "../../types/seqdb-api/resources/PcrProfile";
 import { Region } from "../../types/seqdb-api/resources/Region";
 import { filterBy } from "../../util/rsql";
-import { serialize } from "../../util/serialize";
 
 interface PcrProfileFormProps {
   profile?: PcrProfile;
-  router: SingletonRouter;
+  router: NextRouter;
 }
 
 export function PcrProfileEditPage({ router }: WithRouterProps) {
@@ -63,8 +64,8 @@ export function PcrProfileEditPage({ router }: WithRouterProps) {
 }
 
 function PcrProfileForm({ profile, router }: PcrProfileFormProps) {
-  const { doOperations } = useContext(ApiClientContext);
-
+  const { save } = useContext(ApiClientContext);
+  const { id } = router.query;
   const initialValues = profile || { type: "thermocyclerprofile" };
 
   async function onSubmit(
@@ -72,29 +73,14 @@ function PcrProfileForm({ profile, router }: PcrProfileFormProps) {
     { setStatus, setSubmitting }: FormikActions<any>
   ) {
     try {
-      const serialized = await serialize({
-        resource: submittedValues,
-        type: "thermocyclerprofile"
-      });
-
-      const op = submittedValues.id ? "PATCH" : "POST";
-
-      if (op === "POST") {
-        serialized.id = -100;
-      }
-
-      const response = await doOperations([
+      const response = await save([
         {
-          op,
-          path:
-            op === "PATCH"
-              ? `thermocyclerprofile/${profile.id}`
-              : "thermocyclerprofile",
-          value: serialized
+          resource: submittedValues,
+          type: "thermocyclerprofile"
         }
       ]);
 
-      const newId = response[0].data.id;
+      const newId = response[0].id;
       router.push(`/pcr-profile/view?id=${newId}`);
     } catch (error) {
       setStatus(error.message);
@@ -108,6 +94,7 @@ function PcrProfileForm({ profile, router }: PcrProfileFormProps) {
         <ErrorViewer />
         <ButtonBar>
           <SubmitButton />
+          <CancelButton entityId={id as string} entityLink="pcr-profile" />
         </ButtonBar>
         <div>
           <div className="row">

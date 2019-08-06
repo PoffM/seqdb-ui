@@ -1,9 +1,11 @@
 import { Form, Formik, FormikActions } from "formik";
-import { SingletonRouter, withRouter, WithRouterProps } from "next/router";
+import { WithRouterProps } from "next/dist/client/with-router";
+import { NextRouter, withRouter } from "next/router";
 import { useContext } from "react";
 import {
   ApiClientContext,
   ButtonBar,
+  CancelButton,
   ErrorViewer,
   Head,
   LoadingSpinner,
@@ -17,11 +19,10 @@ import { LabelView } from "../../components/LabelView";
 import { Group } from "../../types/seqdb-api/resources/Group";
 import { Product } from "../../types/seqdb-api/resources/Product";
 import { filterBy } from "../../util/rsql";
-import { serialize } from "../../util/serialize";
 
 interface ProductFormProps {
   product?: Product;
-  router: SingletonRouter;
+  router: NextRouter;
 }
 
 export function ProductEditPage({ router }: WithRouterProps) {
@@ -57,8 +58,8 @@ export function ProductEditPage({ router }: WithRouterProps) {
 }
 
 function ProductForm({ product, router }: ProductFormProps) {
-  const { doOperations } = useContext(ApiClientContext);
-
+  const { save } = useContext(ApiClientContext);
+  const { id } = router.query;
   const initialValues = product || {};
 
   async function onSubmit(
@@ -66,26 +67,14 @@ function ProductForm({ product, router }: ProductFormProps) {
     { setStatus, setSubmitting }: FormikActions<any>
   ) {
     try {
-      const serialized = await serialize({
-        resource: submittedValues,
-        type: "product"
-      });
-
-      const op = submittedValues.id ? "PATCH" : "POST";
-
-      if (op === "POST") {
-        serialized.id = -100;
-      }
-
-      const response = await doOperations([
+      const response = await save([
         {
-          op,
-          path: op === "PATCH" ? `product/${product.id}` : "product",
-          value: serialized
+          resource: submittedValues,
+          type: "product"
         }
       ]);
 
-      const newId = response[0].data.id;
+      const newId = response[0].id;
       router.push(`/product/view?id=${newId}`);
     } catch (error) {
       setStatus(error.message);
@@ -99,6 +88,7 @@ function ProductForm({ product, router }: ProductFormProps) {
         <ErrorViewer />
         <ButtonBar>
           <SubmitButton />
+          <CancelButton entityId={id as string} entityLink="product" />
         </ButtonBar>
         <div>
           <div className="row">

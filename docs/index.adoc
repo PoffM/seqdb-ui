@@ -14,6 +14,8 @@ include::getting_started.adoc[]
 
 include::npm_package_scripts.adoc[]
 
+include::continuous_integration.adoc[]
+
 = React Components
 
 :leveloffset: 2
@@ -31,5 +33,7 @@ include::filter_builder_component.adoc[]
 = API Client
 
 :leveloffset: 2
+
+include::useQuery_hook_function.adoc[]
 
 include::write_operations.adoc[]

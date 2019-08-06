@@ -1,8 +1,9 @@
-const withTypescript = require("@zeit/next-typescript");
 const withCss = require("@zeit/next-css");
+const withTM = require("next-transpile-modules");
 
-module.exports = withTypescript(
-  withCss({
+module.exports = withCss(
+  withTM({
+    transpileModules: ["kitsu", "kitsu-core"],
     webpack: config => {
       // Fixes npm packages that depend on `fs` module
       config.node = {

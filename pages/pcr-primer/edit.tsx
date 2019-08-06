@@ -1,9 +1,11 @@
 import { Form, Formik, FormikActions } from "formik";
-import { SingletonRouter, withRouter, WithRouterProps } from "next/router";
+import { WithRouterProps } from "next/dist/client/with-router";
+import { NextRouter, withRouter } from "next/router";
 import { useContext } from "react";
 import {
   ApiClientContext,
   ButtonBar,
+  CancelButton,
   DateField,
   ErrorViewer,
   Head,
@@ -19,11 +21,10 @@ import { Group } from "../../types/seqdb-api/resources/Group";
 import { PcrPrimer } from "../../types/seqdb-api/resources/PcrPrimer";
 import { Region } from "../../types/seqdb-api/resources/Region";
 import { filterBy } from "../../util/rsql";
-import { serialize } from "../../util/serialize";
 
 interface PcrPrimerFormProps {
   primer?: PcrPrimer;
-  router: SingletonRouter;
+  router: NextRouter;
 }
 
 export function PcrPrimerEditPage({ router }: WithRouterProps) {
@@ -62,7 +63,8 @@ export function PcrPrimerEditPage({ router }: WithRouterProps) {
 }
 
 function PcrPrimerForm({ primer, router }: PcrPrimerFormProps) {
-  const { doOperations } = useContext(ApiClientContext);
+  const { save } = useContext(ApiClientContext);
+  const { id } = router.query;
 
   const initialValues = primer || { lotNumber: 1, seq: "", type: "PRIMER" };
 
@@ -71,26 +73,14 @@ function PcrPrimerForm({ primer, router }: PcrPrimerFormProps) {
     { setStatus, setSubmitting }: FormikActions<any>
   ) {
     try {
-      const serialized = await serialize({
-        resource: submittedValues,
-        type: "pcrPrimer"
-      });
-
-      const op = submittedValues.id ? "PATCH" : "POST";
-
-      if (op === "POST") {
-        serialized.id = -100;
-      }
-
-      const response = await doOperations([
+      const response = await save([
         {
-          op,
-          path: op === "PATCH" ? `pcrPrimer/${primer.id}` : "pcrPrimer",
-          value: serialized
+          resource: submittedValues,
+          type: "pcrPrimer"
         }
       ]);
 
-      const newId = response[0].data.id;
+      const newId = response[0].id;
       router.push(`/pcr-primer/view?id=${newId}`);
     } catch (error) {
       setStatus(error.message);
@@ -103,6 +93,7 @@ function PcrPrimerForm({ primer, router }: PcrPrimerFormProps) {
       <Form>
         <ButtonBar>
           <SubmitButton />
+          <CancelButton entityId={id as string} entityLink="pcr-primer" />
         </ButtonBar>
         <ErrorViewer />
         <div>
